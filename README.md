@@ -10,7 +10,8 @@
 
 <img width=400 src="./img/img1-2.jpg"/>
 
-- ボードは [RP2350_ZeroAE_PCB(変換基板)](https://github.com/kyo-ta04/RP2350_ZeroAE_PCB) + Waveshare RP2350-Zeroです。
+- SBCボードは [RP2350_ZeroAE_PCB(変換基板)](https://github.com/kyo-ta04/RP2350_ZeroAE_PCB) + [Waveshare RP2350-Zero](https://www.waveshare.com/rp2350-zero.htm?srsltid=AfmBOor3dapGREMQ3Jw7-wbtdGrQfb9ct1b37lGbMRKi_4uWXKD-nFCS) ([wiki](https://www.waveshare.com/wiki/RP2350-Zero?srsltid=AfmBOopngQODgjO7HH-rueNnXmBmEBgsMiHmxjJmy-DSdIYb3-XIftci))  です。
+- ベースボードは [EMUZ80_RP2040_PCB](https://github.com/tendai22/EMUZ80_RP2040_PCB) です。 -> [オレンジピコショップ](https://store.shopping.yahoo.co.jp/orangepicoshop/pico-a-100.html?sc_i=shopping-pc-web-top-store-rcmitem-itm_lnk)
 - 抵抗は 1KΩ、クロックは 50～500Ω (クロック周波数等で変わるようなので、その場で要調整)
 
 ### 実行結果
