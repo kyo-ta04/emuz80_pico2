@@ -2,6 +2,28 @@
 
 かの名作 EMUZ80 を、PIC18F47Q43 の代わりに Raspberry Pi Pico2 を使って実現します。他のレトロCPU駆動機を実現するための手始め・Pico2 (とくに PIO)のトレーニングも兼ねたプロジェクトです。
 
+## 2026/06/17 取り急ぎ Fork しました  @DragonballEZ
+ - RP2350B CoreBoard 用の dma_rb2350bブランチを元に RP2350-Zero用に修正しました。
+ - コンパイル済み uf2ファイルあり。
+
+### ボード
+
+<img width=400 src="./img/img1-2.jpg"/>
+
+- ボードは [RP2350_ZeroAE_PCB(変換基板)](https://github.com/kyo-ta04/RP2350_ZeroAE_PCB) + Waveshare RP2350-Zeroです。
+- 抵抗は 1KΩ、クロックは 50～500Ω (クロック周波数等で変わるようなので、その場で要調整)
+
+### 実行結果
+
+<img width=400 src="./img/img1-1.png"/>
+
+ - Z80クロック 25MHzで ASCIART完走しました、クロックの抵抗は 330Ω。  
+<br>
+<br>
+
+----
+
+
 Z80 駆動に先立ち、必要な要素機能の動作確認も兼ねて、ROM エミュレータの試作も行いました。その試行結果は、[ROM_EMULATION.md](doc/ROM_EMULATION.md) に記載してあります。ソースコードはブランチ `rom_emulation` を参照ください。
 
 試作基板と回路図はこんな感じです。

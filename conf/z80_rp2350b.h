@@ -26,13 +26,14 @@
 #endif
 #if defined(RP2350_Zero)
 #define ADDR_MASK 0xffff
+#define A0_Pin 0
 #define D0_Pin 16
+#define IORQ_Pin 24
 #define RD_Pin 25
 #define WR_Pin 26
-#define IORQ_Pin 24
 #define WAIT_Pin 27
-#define CLK_Pin  29
 #define RESET_Pin 28
+#define CLK_Pin  29
 //#define TEST_Pin 15
 #if defined(TEST_Pin)
 #define ADDR_MASK 0x7fff

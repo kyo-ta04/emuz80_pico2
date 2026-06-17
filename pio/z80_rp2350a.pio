@@ -3,33 +3,93 @@
 ;
 ; SPDX-License-Identifier: BSD-3-Clause
 ;
-; z80_rp2350b.pio ... for RP2350B boards
-;.define IORQ_Pin 18
-; z80_rp2350a.pio, z80_rp2040.pio ... for RP2350A/RP2040 boards
+ 
 .define IORQ_Pin 24
+.define RD_Pin   25
+.define WR_Pin   26
+.define WAIT_Pin 27
+.define D0_Pin   16
 
-;
-; PIO0:SM0,1 ... set_pindirs
-;   in: RD_Pin(16), count: 1
-;   sideset: D0_Pin(24),D4_Pin(28), count: 4
-.program set_pindirs
-.origin 0
-.side_set 4 pindirs
-    mov pc, pins side 0xf
-    mov pc, pins side 0x0
+; SET pin 0 should be mapped to your LED GPIO
 
-;
-; PIO0:SM2: data_out
-;   OUT: D0_Pin(24), count: 8
-.program data_out
+;   IN: A0-A15(0), IN_COUNT: 16
+;   OUT: D0-Pin(16), OUT_COUNT: 8(D0-D7)
+;   MOV: D0-Pin(16), OUT_COUNT: 8
+;   JMP_PIN: IORQ_Pin(24)
+;   RD_Pin(16), count: 1
+.program ram_read_addr
 .wrap_target
-    out pins, 8
+loop_1:
+    wait 0 gpio RD_Pin; wait for IORQ==High && RD==Low
+    jmp pin do_1
+    jmp skip_1
+do_1:
+    in pins, 16         ; capture A0-A15
+    push                ; 32 bit is specified in in-shift,
+                        ; so explicit push is needed. 
+    ;mov pindirs, ~null  ; D0-D7 as output
+    ;pull
+    ;out pins, 8         ; output DMA CH2 data to D0-D7
+skip_1:
+    wait 1 gpio RD_Pin
+    mov pindirs, null
 .wrap
 
 ;
-; PIO0:SM3 ... two/one phase clock generator(program clockgen)
+; PIO0:SM1 ... ram_write_addr
+;   IN: A0-A15(0), IN_COUNT: 16, autopush
+;   MOV: D0-Pin(16), OUT_COUNT: 8
+;   JMP: IORQ_Pin
 ;
-; SET: BASE: 40(CLK_Pin, inverted), 41(INT_Pin, inverted)
+.program ram_write_addr
+.wrap_target
+loop_2:
+    wait 0 gpio WR_Pin ; wait for IORQ==High && WR==Low
+    jmp pin do_2
+    jmp skip_2
+do_2:
+    mov pindirs, null   ; D0-D7 as input
+    in pins, 16
+    push
+skip_2:
+    wait 1 gpio WR_Pin
+.wrap
+
+;
+; PIO0:SM2: ram_write_data
+;   IN:  D0_Pin(16), count: 8, no-autopush
+.program ram_write_data
+.wrap_target
+loop_3:
+    wait 0 gpio WR_Pin [4]
+    jmp pin do_3
+    jmp skip_3
+do_3:
+    in pins, 8
+    push
+    wait 1 gpio WR_Pin  ; wait for WR upper edge
+    jmp loop_3
+skip_3:
+    wait 1 gpio WR_Pin  ; wait for WR upper edge
+.wrap
+
+; PIO0:SM3 ... data_out
+;   OUT: D0-Pin(16), OUT_COUNT: 8(D0-D7)
+.program data_out
+.wrap_target
+loop_1:
+    wait 0 gpio RD_Pin ; wait RD==Low
+    mov pindirs, ~null  ; D0-D7 as output
+    pull
+    out pins, 8         ; output DMA CH3 data to D0-D7
+    wait 1 gpio RD_Pin
+    mov pindirs, null
+.wrap
+
+;
+; PIO1:SM2 ... two/one phase clock generator(program clockgen)
+;
+; SET: BASE: 29(CLK_Pin, inverted), 41(INT_Pin, inverted)
 .program clockgen
 .wrap_target
     ; outputs are inverted, so 0 means High, 1 means Low
@@ -41,89 +101,26 @@
 .wrap             ; Blink forever!
 
 ;
-; PIO1,
 ;
 
 ;
 ; PIO1:SM3: iorq_wait
-;   SET: WAIT_Pin(19), count: 1
+;   SET: WAIT_Pin(27), count: 1
 .program iorq_wait
     set pins, 1
 .wrap_target
-    wait 0 gpio IORQ_Pin     ; IORQ_Pin(18)
-    set pins, 0         ; WAIT_PIn(19) Low
+    wait 0 gpio IORQ_Pin     ; IORQ_Pin(24)
+    set pins, 0         ; WAIT_PIn(27) Low
     pull                ; wait for MainCPU work done
-    set pins, 1         ; WAIT_Pin(19) High
-    wait 1 gpio IORQ_Pin     ; IORQ_Pin(18)
+    set pins, 1         ; WAIT_Pin(27) High
+    wait 1 gpio IORQ_Pin     ; IORQ_Pin(24)
     push
 .wrap
 
 % c-sdk {
-#include <stdio.h>
-#include "hardware/pio.h"
+//#include <stdio.h>
+//#include "hardware/pio.h"
 // this is a raw helper function for use by the user which sets up the GPIO output, and configures the SM to output on a particular pin
 //extern int my_pio_sm_set_consecutive_pindirs(PIO pio, uint sm, uint pin, uint count, bool is_out);
-
-void clockgen_program_init(PIO pio, uint sm, uint offset, uint pin, uint phase) {
-
-    pio_gpio_init(pio, pin);
-    if (phase == 2)
-        pio_gpio_init(pio, pin + 1);
-    pio_sm_set_consecutive_pindirs(pio, sm, pin, phase, true);
-    pio_sm_config c = clockgen_program_get_default_config(offset);
-    // set_set_pin_base should have been adjusted by pio->gpiobase
-    // so far not so in set_set_pin_base();
-    sm_config_set_set_pins(&c, pin, phase);
-    // two-phase: (4 instruction loop)
-    //  16.0 ... 2.33MHz (420ns/cycle)
-    //   9.42 ... 4.0MHz  (250ns/cycle)
-    // single clock: (2 instruction loop)
-    //  50.0 ... 1.5MHz (660-670ns) 
-    //  30.0 ... 2.5MHz (400ns) ... no wait, 
-    //  18.7 ... 4.0-4.17MHz (250-260ns) .... 0/1 wait in M1, 1 wait in WR, 0/1 wait in RD
-    //  10.0 ... 7.1-7.6MHz (130-140ns) ... seems to work
-    //   5.0 ... 14-16MHz (60-70ns) ... does not works
-    sm_config_set_clkdiv(&c, 13.0); // 12.0 ... 6.25MHz max
-    pio_sm_init(pio, sm, offset, &c);
-}
-
-void set_pindirs_program_init(PIO pio, uint sm, uint offset, uint data_pin, uint rd_pin) {
-	//   in: RD_Pin(16), count: 1
-	//   sideset: D0_Pin(24),D4_Pin(28), count: 4
-    pio_sm_set_consecutive_pindirs(pio, sm, rd_pin, 1, false);
-    pio_sm_config c = set_pindirs_program_get_default_config(offset);
-    sm_config_set_in_pins(&c, rd_pin);
-    sm_config_set_in_pin_count(&c, 1);
-    sm_config_set_sideset_pins(&c, data_pin);
-    sm_config_set_clkdiv(&c, 1);         // 1 ... full speed 
-    pio_sm_init(pio, sm, offset, &c);
-}
-
-void data_out_program_init(PIO pio, uint sm, uint offset, uint d0_pin) {
-	//	 OUT: D0_Pin(24), count: 8
-    pio_sm_set_consecutive_pindirs(pio, sm, d0_pin, 8, true);
-    pio_sm_config c = data_out_program_get_default_config(offset);
-    sm_config_set_out_pins(&c, d0_pin, 8);
-    sm_config_set_out_shift(&c, true, true, 8);
-    sm_config_set_clkdiv(&c, 1);         // 1 ... full speed 
-    pio_sm_init(pio, sm, offset, &c);
-}
-
-void iorq_wait_program_init(PIO pio, uint sm, uint offset, uint wait_pin, uint d0_pin) {
-	//   IN: IORQ_Pin(18), count 1
-	//	 SET: WAIT_Pin(19), count: 1
-    //pio_sm_set_consecutive_pindirs(pio, sm, iorq_pin, 1, false);
-    pio_sm_set_consecutive_pindirs(pio, sm, wait_pin, 1, true);
-    pio_sm_config c = iorq_wait_program_get_default_config(offset);
-    sm_config_set_in_pins(&c, d0_pin);
-    sm_config_set_in_pin_count(&c, 8);
-    sm_config_set_in_shift(&c, false, false, 8);
-    sm_config_set_out_pins(&c, d0_pin, 8);
-    sm_config_set_out_shift(&c, true, false, 8);
-    sm_config_set_set_pins(&c, wait_pin, 1);
-    sm_config_set_set_pin_count(&c, 1);
-    sm_config_set_clkdiv(&c, 1);         // 1 ... full speed 
-    pio_sm_init(pio, sm, offset, &c);
-}
 
 %}

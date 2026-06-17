@@ -13,7 +13,6 @@ extern void emuz80_dma_init(void);
 extern __attribute__((noinline)) void __time_critical_func(emuz80_core1_entry)(void);
 extern void emuz80_unreset(void);
 extern void gpio_out_init(uint gpio, bool value);
-extern void cpu_loader(void);
 
 extern uint8_t __aligned(65536) mem[];
 

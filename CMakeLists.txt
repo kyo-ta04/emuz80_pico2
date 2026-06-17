@@ -1,7 +1,7 @@
 # Generated Cmake Pico project file
 
 #
-# CMakeLists_rb2350b.txt
+# CMakeLists_rp2350b.txt
 #
 
 cmake_minimum_required(VERSION 3.13)
@@ -29,21 +29,20 @@ endif()
 # ====================================================================================
 # macro configuration
 
-set (EMUZ80_CONFIG z80_rp2350b)
+set (EMUZ80_CONFIG z80_rp2350a)
 
 # config variable definitions
-if ("${EMUZ80_CONFIG}" STREQUAL "z80_rp2350b")
+if ("${EMUZ80_CONFIG}" STREQUAL "z80_rp2350a")
     set(emuz80_project ${EMUZ80_CONFIG})
-    set(emuz80_board "pimoroni_pga2350")
+    set(emuz80_board "waveshare_rp2350_zero")
     set(emuz80_main_c "emuz80_pico2.c")
     set(emuz80_cpu_c "cpu/z80.c")
-    set(emuz80_loader.c "cpu/z80_test.c")
     set(emuz80_conf_h "conf/z80_rp2350b.h")
-    set(emuz80_pio_pio "pio/z80_rp2350b.pio")
-    set(emuz80_macro_defs -DRP2350B_CoreBoard -DRP2350B)
+    set(emuz80_pio_pio "pio/z80_rp2350a.pio")
+    set(emuz80_macro_defs -DRP2350_Zero -DRP2350A)
 endif()
 
-# configuration definitions
+
 set(PICO_BOARD ${emuz80_board} CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
@@ -56,7 +55,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(emuz80_pico2 ${emuz80_main_c} ${emuz80_cpu_c} ${emuz80_loader.c} ${emuz80_conf_h})
+add_executable(emuz80_pico2 ${emuz80_main_c} ${emuz80_cpu_c} ${emuz80_conf_h})
 
 pico_set_program_name(emuz80_pico2 ${emuz80_project})
 pico_set_program_version(emuz80_pico2 "0.1")
