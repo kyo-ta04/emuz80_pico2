@@ -14,6 +14,15 @@
 - ベースボードは [EMUZ80_RP2040_PCB](https://github.com/tendai22/EMUZ80_RP2040_PCB) です。 -> [オレンジピコショップ](https://store.shopping.yahoo.co.jp/orangepicoshop/pico-a-100.html?sc_i=shopping-pc-web-top-store-rcmitem-itm_lnk)
 - 抵抗は 1KΩ、クロックは 50～500Ω (クロック周波数等で変わるようなので、その場で要調整)
 
+
+### 参考回路図
+
+<img width=400 src="./img/img1-3.jpg"/>
+
+<br>
+<br>
+
+
 ### 実行結果
 
 <img width=400 src="./img/img1-1.png"/>
@@ -21,6 +30,7 @@
  - Z80クロック 25MHzで ASCIART完走しました、クロックの抵抗は ~~330~~ 510Ω(**ちょっと不安定**)。  
 <br>
 <br>
+
 
 ----
 
