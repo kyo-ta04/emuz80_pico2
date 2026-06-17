@@ -53,7 +53,7 @@ extern volatile int rx_rdy, tx_rdy, rx_data, tx_data, txbuf_full;
 //
 // sys_clock_khz = 400000; // 400MHz Core 1.3V
 //
-// float clk_divider = 7;      // 7 ... about 28.57MHz NG
+// float clk_divider = 7;      // 7 ... **NG** about 28.57MHz
 // float clk_divider = 8;      // 8 ... about 25MHz
 // float clk_divider = 8.3;    // 8.3 ... about 24MHz 
 // float clk_divider = 9;      // 9 ... about 22.22MHz 

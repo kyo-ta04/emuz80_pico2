@@ -119,27 +119,22 @@ void set_qspi_clock_divider(uint32_t sys_clock_khz, uint32_t qspi_max_khz) {
 
 __attribute__((noinline)) int __time_critical_func(main)(void) 
 {
-  uint32_t sysclk = clock_get_hz(clk_sys);
-  int sysvolt = VREG_VOLTAGE_1_15;
-
-  if (true) { // 高速 コア電圧1.3V クロック 360/400MHz 設定
-    sysvolt = VREG_VOLTAGE_1_30;
-    vreg_set_voltage(sysvolt);
-    sleep_ms(100);
-    sysclk = 400000;
-    // sysclk = 360000;
-    set_sys_clock_khz(sysclk, true);
-    set_qspi_clock_divider(sysclk, 133000); // QSPIクロックを133MHz以下に
-  }
-
-
-
- //   set_sys_clock_khz(250000, true);
+    uint32_t sysclk = clock_get_hz(clk_sys) / 1000;
+    int sysvolt = VREG_VOLTAGE_1_15;
+ 
+    if (true) { // 高速 コア電圧1.3V クロック 360/400MHz 設定
+        sysvolt = VREG_VOLTAGE_1_30;
+        vreg_set_voltage(sysvolt);
+        sleep_ms(100);
+        sysclk = 400000;
+        // sysclk = 360000;
+        set_sys_clock_khz(sysclk, true);
+        set_qspi_clock_divider(sysclk, 133000); // QSPIクロックを133MHz以下に
+    }
 
     stdio_init_all();
     setbuf(stdout, NULL);
     sleep_ms(1000);     // needed for starting USB printf
-
 
     // mem clear
     for (int i = 0 ; i < sizeof mem; ++i)
