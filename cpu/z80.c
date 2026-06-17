@@ -59,7 +59,7 @@ extern volatile int rx_rdy, tx_rdy, rx_data, tx_data, txbuf_full;
 // float clk_divider = 9;      // 9 ... about 22.22MHz 
 // float clk_divider = 10;     // 10 ... about 20MHz
 // float clk_divider = 11;     // 11 ... about 18.18MHz
-float clk_divider = 8.3;    // 13 ... about 15.38MHz
+float clk_divider = 13;    // 13 ... about 15.38MHz
 
 
 
