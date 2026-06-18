@@ -2,15 +2,15 @@
 
 かの名作 EMUZ80 を、PIC18F47Q43 の代わりに Raspberry Pi Pico2 を使って実現します。他のレトロCPU駆動機を実現するための手始め・Pico2 (とくに PIO)のトレーニングも兼ねたプロジェクトです。
 
-## 2026/06/17 取り急ぎ Fork しました  @DragonballEZ
- - RP2350B CoreBoard 用の dma_rb2350bブランチを元に RP2350-Zero用に修正しました。
+## 2026/06/18 取り急ぎ Fork しました  @DragonballEZ
+ - dma_rb2350bブランチを元に weact RP2350B-CoreBoard(AE-RP2040ピンコネ変換)用に修正しました。
  - コンパイル済み uf2ファイルあり。
 
 ### ボード
 
 <img width=400 src="./img/img1-2.jpg"/>
 
-- SBCボードは [RP2350_ZeroAE_PCB(変換基板)](https://github.com/kyo-ta04/RP2350_ZeroAE_PCB) + [Waveshare RP2350-Zero](https://www.waveshare.com/rp2350-zero.htm?srsltid=AfmBOor3dapGREMQ3Jw7-wbtdGrQfb9ct1b37lGbMRKi_4uWXKD-nFCS) ([wiki](https://www.waveshare.com/wiki/RP2350-Zero?srsltid=AfmBOopngQODgjO7HH-rueNnXmBmEBgsMiHmxjJmy-DSdIYb3-XIftci))  です。
+- SBCボードは [RP2350B_CoreBoard-AE_PCB(変換基板)](https://github.com/kyo-ta04/RP2350B_CoreBoard-AE_PCB) + [WeActStudio RP2350B CoreBoard](https://github.com/WeActStudio/WeActStudio.RP2350BCoreBoard/blob/main/HDK/RP2350B_PINOUT.png) ([回路図](https://github.com/WeActStudio/WeActStudio.RP2350BCoreBoard/blob/main/HDK/RP2350B_SCH.pdf))  です。
 - ベースボードは [EMUZ80_RP2040_PCB](https://github.com/tendai22/EMUZ80_RP2040_PCB) です。 -> [オレンジピコショップ](https://store.shopping.yahoo.co.jp/orangepicoshop/pico-a-100.html?sc_i=shopping-pc-web-top-store-rcmitem-itm_lnk)
 - 抵抗は 1KΩ、クロックは 50～500Ω (クロック周波数等で変わるようなので、その場で要調整)
 
@@ -27,7 +27,7 @@
 
 <img width=400 src="./img/img1-1.png"/>
 
- - Z80クロック 25MHzで ASCIART完走しました、クロックの抵抗は ~~330~~ 510Ω(**ちょっと不安定**)。  
+ - Z80クロック 25MHzで ASCIART完走しました、クロックの抵抗は ~~330~~ 510Ω(**わりと不安定**)。  
 <br>
 <br>
 

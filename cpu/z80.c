@@ -59,7 +59,7 @@ extern volatile int rx_rdy, tx_rdy, rx_data, tx_data, txbuf_full;
 // float clk_divider = 9;      // 9 ... about 22.22MHz 
 // float clk_divider = 10;     // 10 ... about 20MHz
 // float clk_divider = 11;     // 11 ... about 18.18MHz
-float clk_divider = 13;    // 13 ... about 15.38MHz
+// float clk_divider = 13;    // 13 ... about 15.38MHz
 
 
 
@@ -69,7 +69,7 @@ float clk_divider = 13;    // 13 ... about 15.38MHz
 // float clk_divider = 5;      // 5 ... about 25MHz NG
 // float clk_divider = 6;      // 6 ... about 20.83MHz NG
 // float clk_divider = 7;      // 7 ... about 17.86MHz
-// float clk_divider = 8;      // 8 ... about 15.62MHz
+float clk_divider = 8;      // 8 ... about 15.62MHz
 // float clk_divider = 15;      // 15 ... about 8.3MHz
 // float clk_divider = 31;      // 31 ... about 4MHz
 // float clk_divider = 125;      // 125 ... about 1MHz
@@ -132,7 +132,7 @@ void emuz80_pio_init() {
 
 #if defined(RP2350B)
     // pio_set_gpio_base should be invoked before pio_add_program
-    pio_set_gpio_base(pio1, 16);
+//    pio_set_gpio_base(pio1, 16); // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif //defined(RP2350B)
     pio_sm_config c;
     // PIO0:SM0 ... ram_read
@@ -158,8 +158,8 @@ void emuz80_pio_init() {
 
     // PIO0:SM1 ... ram_write_addr
     //   IN: A0-A15(0), IN_COUNT: 16, autopush
-    //   OUT/MOV: D0-Pin(24), OUT_COUNT: 8
-    //   JMP_PIN: WR_Pin(21)
+    //   OUT/MOV: D0-Pin(16), OUT_COUNT: 8
+    //   JMP_PIN: WR_Pin(26)
 	offset1 = pio_add_program(pio0, &ram_write_addr_program);
     printf("ram_write_addr: %d\n", offset1);
     pio_sm_set_consecutive_pindirs(pio0, 1, A0_Pin, 16, false);
@@ -177,7 +177,7 @@ void emuz80_pio_init() {
     pio_sm_init(pio0, 1, offset1, &c);
 
     // PIO0:SM2: ram_write_data
-    //   IN:  D0_Pin(24), count: 8, autopush
+    //   IN:  D0_Pin(16), count: 8, autopush
     offset1 = pio_add_program(pio0, &ram_write_data_program);
     printf("ram_write_data: %d\n", offset1);
     pio_sm_set_consecutive_pindirs(pio0, 2, D0_Pin, 8, false);  // data as input
@@ -192,7 +192,7 @@ void emuz80_pio_init() {
     pio_sm_init(pio0, 2, offset1, &c);
  
     // PIO1:SM2 ... two/one phase clock generator(program clockgen)
-	// 	 SET: BASE: 40(CLK_Pin, inverted), 41(INT_Pin, inverted)
+	// 	 SET: BASE: 29(CLK_Pin, inverted), 30(INT_Pin, inverted)
     offset1 = pio_add_program(pio1, &clockgen_program);
     printf("clockgen: %d\n", offset1);
     int phase = 1;
@@ -221,7 +221,7 @@ void emuz80_pio_init() {
     printf("CLK: %dMHz, div: %0.1f, Z80: %.2fMHz\n", sysclk/1000000, clk_divider, (double)((sysclk/2)/clk_divider)/1000000.0);
 
     // PIO0:SM3 ... data_out
-    //   OUT/MOV: D0-Pin(24), OUT_COUNT: 8(D0-D7)
+    //   OUT/MOV: D0-Pin(16), OUT_COUNT: 8(D0-D7)
     //   SET_BASE: WAIT
 	offset1 = pio_add_program(pio0, &data_out_program);
     printf("data_out: %d\n", offset1);
@@ -239,8 +239,8 @@ void emuz80_pio_init() {
 
 
     // PIO1: SM3 ... IO cycle WAIT handler
-    //   SET: BASE: 19(WAIT_Pin)
-    //   wait: 18(IORQ_Pin)
+    //   SET: BASE: 27(WAIT_Pin)
+    //   wait: 24(IORQ_Pin)
     offset1 = pio_add_program(pio1, &iorq_wait_program);
     //iorq_wait_program_init(pio1, 3, offset1, WAIT_Pin, D0_Pin);
 	//   IN: IORQ_Pin(24), count 1

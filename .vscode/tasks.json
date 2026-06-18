@@ -20,10 +20,11 @@
         {
             "label": "Run Project",
             "type": "process",
+            "dependsOn": "Compile Project",
             "command": "${env:HOME}/.pico-sdk/picotool/2.1.1/picotool/picotool",
             "args": [
                 "load",
-                "${command:raspberry-pi-pico.launchTargetPath}",
+                "${workspaceFolder}/build/emuz80_pico2.elf",
                 "-fx"
             ],
             "presentation": {
@@ -47,7 +48,7 @@
                 "-f",
                 "target/${command:raspberry-pi-pico.getTarget}.cfg",
                 "-c",
-                "adapter speed 5000; program \"${command:raspberry-pi-pico.launchTargetPath}\" verify reset exit"
+                "adapter speed 5000; program \"${workspaceFolder}/build/emuz80_pico2.elf\" verify reset exit"
             ],
             "problemMatcher": [],
             "windows": {

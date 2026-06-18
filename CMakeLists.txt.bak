@@ -29,29 +29,26 @@ endif()
 # ====================================================================================
 # macro configuration
 
-# set (EMUZ80_CONFIG z80_rp2350b)
-set (EMUZ80_CONFIG emuz80_pico2) 
+set (EMUZ80_CONFIG z80_rp2350a)
 
 # config variable definitions
-if ("${EMUZ80_CONFIG}" STREQUAL "emuz80_pico2")
+if ("${EMUZ80_CONFIG}" STREQUAL "z80_rp2350a")
     set(emuz80_project ${EMUZ80_CONFIG})
-    set(emuz80_board "pimoroni_pga2350")
+    set(emuz80_board "waveshare_rp2350_zero")
     set(emuz80_main_c "emuz80_pico2.c")
     set(emuz80_cpu_c "cpu/z80.c")
     set(emuz80_conf_h "conf/z80_rp2350b.h")
     set(emuz80_pio_pio "pio/z80_rp2350a.pio")
-    set(emuz80_macro_defs -DRP2350B_CoreBoard -DRP2350B)
+    set(emuz80_macro_defs -DRP2350_Zero -DRP2350A)
 endif()
 
 
-set(PICO_BOARD ${emuz80_board} CACHE STRING "Board type")
-#set(PICO_BOARD pimoroni_pga2350 CACHE STRING "Board type")
+set(PICO_BOARD pimoroni_pga2350 CACHE STRING "Board type")
 
 # Pull in Raspberry Pi Pico SDK (must be before project)
 include(pico_sdk_import.cmake)
 
-#project(rp2350b_coreboard C CXX ASM)
-project(emuz80_pico2 C CXX ASM) 
+project(emuz80_pico2 C CXX ASM)
 
 # Initialise the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -62,7 +59,7 @@ add_executable(emuz80_pico2 ${emuz80_main_c} ${emuz80_cpu_c} ${emuz80_conf_h})
 
 pico_set_program_name(emuz80_pico2 ${emuz80_project})
 pico_set_program_version(emuz80_pico2 "0.1")
-    
+
 # copy_to_ram means bootloader copies binaries to RAM and execute it
 pico_set_binary_type(emuz80_pico2 copy_to_ram)
 
@@ -102,4 +99,3 @@ target_link_libraries(emuz80_pico2
         )
 
 pico_add_extra_outputs(emuz80_pico2)
-

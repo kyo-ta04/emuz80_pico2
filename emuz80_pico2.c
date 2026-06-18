@@ -122,12 +122,16 @@ __attribute__((noinline)) int __time_critical_func(main)(void)
     uint32_t sysclk = clock_get_hz(clk_sys) / 1000;
     int sysvolt = VREG_VOLTAGE_1_15;
  
-    if (true) { // 高速 コア電圧1.3V クロック 360/400MHz 設定
+    if (false) { // 高速 コア電圧1.3V クロック 360/400MHz 設定
         sysvolt = VREG_VOLTAGE_1_30;
         vreg_set_voltage(sysvolt);
         sleep_ms(100);
         sysclk = 400000;
         // sysclk = 360000;
+        set_sys_clock_khz(sysclk, true);
+        set_qspi_clock_divider(sysclk, 133000); // QSPIクロックを133MHz以下に
+    } else {
+        sysclk = 250000;    // クロック 250MHz 設定
         set_sys_clock_khz(sysclk, true);
         set_qspi_clock_divider(sysclk, 133000); // QSPIクロックを133MHz以下に
     }

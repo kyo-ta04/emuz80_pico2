@@ -4,7 +4,7 @@
         {
             "name": "Pico Debug (Cortex-Debug)",
             "cwd": "${userHome}/.pico-sdk/openocd/0.12.0+dev/scripts",
-            "executable": "${command:raspberry-pi-pico.launchTargetPath}",
+            "executable": "${workspaceFolder}/build/emuz80_pico2.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
@@ -21,7 +21,7 @@
             // Also works fine for flash binaries
             "overrideLaunchCommands": [
                 "monitor reset init",
-                "load \"${command:raspberry-pi-pico.launchTargetPath}\""
+                "load \"${workspaceFolder}/build/emuz80_pico2.elf\""
             ],
             "openOCDLaunchCommands": [
                 "adapter speed 5000"
@@ -30,7 +30,7 @@
         {
             "name": "Pico Debug (Cortex-Debug with external OpenOCD)",
             "cwd": "${workspaceRoot}",
-            "executable": "${command:raspberry-pi-pico.launchTargetPath}",
+            "executable": "${workspaceFolder}/build/emuz80_pico2.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "external",
@@ -43,7 +43,7 @@
             // Also works fine for flash binaries
             "overrideLaunchCommands": [
                 "monitor reset init",
-                "load \"${command:raspberry-pi-pico.launchTargetPath}\""
+                "load \"${workspaceFolder}/build/emuz80_pico2.elf\""
             ]
         },
         {
@@ -51,7 +51,7 @@
             "type": "cppdbg",
             "request": "launch",
             "cwd": "${workspaceRoot}",
-            "program": "${command:raspberry-pi-pico.launchTargetPath}",
+            "program": "${workspaceFolder}/build/emuz80_pico2.elf",
             "MIMode": "gdb",
             "miDebuggerPath": "${command:raspberry-pi-pico.getGDBPath}",
             "miDebuggerServerAddress": "localhost:3333",
