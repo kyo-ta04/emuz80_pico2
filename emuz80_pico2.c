@@ -24,6 +24,10 @@
 #include "hardware/gpio.h"
 #include "hardware/clocks.h"
 #include "hardware/vreg.h"
+#if PICO_RP2350
+#include "hardware/structs/qmi.h"
+#include "hardware/regs/qmi.h"
+#endif
 
 #include "tusb.h"
 #include "pico/stdio_usb.h"
@@ -110,17 +114,61 @@ __attribute__((noinline)) void __time_critical_func(emuz80_core0_entry)(void)
 #define EMUBASIC_IO
 
 // QSPIクロックを調整する関数
+// RP2350: QMI の CLKDIV で SCLK = clk_sys / CLKDIV を設定する
+// RP2040: SSI の入力クロック (clk_peri) を分周する
 void set_qspi_clock_divider(uint32_t sys_clock_khz, uint32_t qspi_max_khz) {
-  uint32_t divider = (sys_clock_khz + qspi_max_khz - 1) / qspi_max_khz;
-  clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
+    uint32_t divider = (sys_clock_khz + qspi_max_khz - 1) / qspi_max_khz;
+    if (divider < 1) {
+        divider = 1;
+    }
+#if PICO_RP2350
+    if (divider > 256) {
+        divider = 256;
+    }
+    // CLKDIV 1..255 はそのまま、256 は 0 でエンコード
+    uint32_t clkdiv = (divider == 256) ? 0 : divider;
+    hw_write_masked(&qmi_hw->m[0].timing,
+                    clkdiv << QMI_M0_TIMING_CLKDIV_LSB,
+                    QMI_M0_TIMING_CLKDIV_BITS);
+    // CLKDIV 変更を XIP アクセス前に反映させる (RP2350 datasheet)
+    (void)*(volatile uint32_t *)XIP_BASE;
+    __dsb();
+    __isb();
+#else
+    clock_configure(clk_peri, 0, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                   sys_clock_khz * 1000, sys_clock_khz * 1000 / divider);
+#endif
 }
 
+// QMI_M0_TIMING.CLKDIV を読み出す (戻り値 1..256、レジスタ値 0 は 256)
+uint32_t get_qspi_m0_clkdiv(void) {
+#if PICO_RP2350
+    uint32_t clkdiv = (qmi_hw->m[0].timing & QMI_M0_TIMING_CLKDIV_BITS) >> QMI_M0_TIMING_CLKDIV_LSB;
+    return (clkdiv == 0) ? 256 : clkdiv;
+#else
+    return 0;
+#endif
+}
+
+void print_vreg_voltage(enum vreg_voltage voltage) {
+    float volt = 0.0f;
+    switch (voltage) {
+        case VREG_VOLTAGE_1_10: volt = 1.10f; break;
+        case VREG_VOLTAGE_1_15: volt = 1.15f; break;
+        case VREG_VOLTAGE_1_20: volt = 1.20f; break;
+        case VREG_VOLTAGE_1_25: volt = 1.25f; break;
+        case VREG_VOLTAGE_1_30: volt = 1.30f; break;    
+        default:
+            printf("VREG: Unknown voltage setting %d\n", voltage);
+            break;
+    }
+    printf("VREG: %0.2fV\n", volt);
+}
 
 __attribute__((noinline)) int __time_critical_func(main)(void) 
 {
     uint32_t sysclk = clock_get_hz(clk_sys) / 1000;
-    int sysvolt = VREG_VOLTAGE_1_15;
+    enum vreg_voltage sysvolt = vreg_get_voltage(); //VREG_VOLTAGE_1_15;
  
     if (true) { // 高速 コア電圧1.3V クロック 360/400MHz 設定
         sysvolt = VREG_VOLTAGE_1_30;
@@ -134,12 +182,17 @@ __attribute__((noinline)) int __time_critical_func(main)(void)
 
     stdio_init_all();
     setbuf(stdout, NULL);
-    sleep_ms(1000);     // needed for starting USB printf
+    sleep_ms(1500);     // needed for starting USB printf
 
     // mem clear
     for (int i = 0 ; i < sizeof mem; ++i)
         mem[i] = 0;
-    // copy prog1
+
+    printf("System clock: %dMHz\n", sysclk / 1000);
+    print_vreg_voltage(sysvolt);
+    printf("QSPI M0_TIMING.CLKDIV = %d\n", get_qspi_m0_clkdiv());
+
+        // copy prog1
 #ifdef EMUBASIC_IO
     printf("loading: EMUBASIC_IO\n");
 #include "emubasic_io.h"
